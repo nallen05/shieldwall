@@ -255,47 +255,6 @@
 
 ;; configuring test run behavior
 
-;; (defun call-with-shield-config (thunk &key 
-;;                                         (directory nil directory-provided-p)
-;;                                         (filter nil filter-provided-p)
-;;                                         (line-width nil line-width-provided-p)
-;;                                         (muffle-failures-p nil muffle-provided-p)
-;;                                         (output nil output-provided-p)
-;;                                         (stop-on-first-fail-p nil stop-provided-p)
-;;                                         (suppress-errors-p nil suppress-provided-p))
-;;   (with-shieldwall-directory (if directory-provided-p
-;;                                  directory
-;;                                   *shieldwall-directory*)
-;;     (with-shieldwall-output
-;;         (if output-provided-p
-;;             (if (listp output)
-;;                 (first output)
-;;                 output)
-;;             *shieldwall-output*)
-;;         (when (and output-provided-p
-;;                    (listp output))                   
-;;           (rest output))
-;;       (let ((*shieldwall-filter-path* (if filter-provided-p
-;;                                           filter
-;;                                           *shieldwall-filter-path*))
-;;             (*shieldwall-line-width* (if line-width-provided-p
-;;                                           line-width
-;;                                           *shieldwall-line-width*))
-;;             (*shieldwall-muffle-failures-p* (if muffle-provided-p
-;;                                                   muffle-failures-p
-;;                                                   *shieldwall-muffle-failures-p*))
-;;             (*shieldwall-stop-on-first-fail-p* (if stop-provided-p
-;;                                                   stop-on-first-fail-p
-;;                                                   *shieldwall-stop-on-first-fail-p*))
-;;             (*shieldwall-suppress-errors-p* (if suppress-provided-p
-;;                                                 suppress-errors-p
-;;                                                 *shieldwall-suppress-errors-p*)))
-;;         (declare (special *shieldwall-filter-path*
-;;                           *shieldwall-muffle-failures-p*
-;;                           *shieldwall-suppress-errors-p*
-;;                           *shieldwall-stop-on-first-fail-p*))
-;;         (funcall thunk)))))
-
 (defun call-with-shield-config (thunk &key 
                                         (directory *shieldwall-directory*)
                                         (filter *shieldwall-filter-path*)
@@ -336,59 +295,6 @@
 
 
 ;; defining & running tests (aka "shields")
-
-;; (defun %print-shield-result (shield)
-;;   (cond
-;;     ((shield-skip-p shield)
-;;      (format-shieldwall-line "SKIPPING TEST: ~A" (shield-describe shield)))
-;;     ((shield-passed-p shield)
-;;      (format-shieldwall-line "~A" (shield-describe shield)))
-;;     (t
-;;      (if *shieldwall-muffle-failures-p*
-;;          (format-shieldwall-line "FAIL~A:~A"
-;;                                  (if (shield-encountered-error-p shield)
-;;                                      (format nil
-;;                                              " (ERROR: ~S)"
-;;                                              (type-of (shield-encountered-error-p shield)))
-;;                                      ""))
-;;     (unless *shieldwall-muffle-failures-p*
-;;       (%print-newline)
-;;       (%print-hline-small :left-corner-char #\,)
-;;       (%print-newline)
-;;       (pprint-logical-block (*shieldwall-output* nil :per-line-prefix "|")
-;;         (format-shieldwall "~A"
-;;                            (shield-describe shield))
-;;         (format-shieldwall "~%test form~A~14T~W"
-;;                            (make-string 6 :initial-element #\space)
-;;                            (shield-form shield))     
-;;         (if (shield-encountered-error-p shield)
-;;             (format-shieldwall "~%threw error~A~14T~W"
-;;                                (make-string 4 :initial-element #\space)
-;;                                (shield-encountered-error-p shield))
-;;             (format-shieldwall "~%evaluated to~A~14T~W"
-;;                                (make-string 3 :initial-element #\space)
-;;                                (shield-got shield)))
-;;         (if (shield-expect-error-p shield)
-;;             (format-shieldwall "~%when condition ~14T~W"
-;;                                (shield-expect shield))
-;;             (unless (shield-encountered-error-p shield)
-;;               (format-shieldwall "~%when value~A~14T~W"
-;;                                  (make-string 5 :initial-element #\space)
-;;                                  (shield-expect shield))))
-;;         (unless (and (shield-encountered-error-p shield)
-;;                      (not (shield-expect-error-p shield)))
-;;           (format-shieldwall "~%was expected~A~14T~W"
-;;                              (make-string 3 :initial-element #\space)
-;;                              (shield-test-function shield))))
-;;       (when (and *shieldwall-stop-on-first-fail-p*
-;;                  (not (shield-passed-p shield)))
-;;         (format-shieldwall "~%|")
-;;         (format-shieldwall "~%|SETTING ~A & STOPPING" '*last-failed-shield*)
-;;         (format-shieldwall "~%|BECAUSE ~A IS ~S"
-;;                            '*shieldwall-stop-on-first-fail-p*
-;;                            *shieldwall-stop-on-first-fail-p*))
-;;       (%print-newline)
-;;       (%print-hline-small :left-corner-char #\`))))))
 
 (defun %print-shield-result (shield)
   (cond
@@ -747,72 +653,10 @@
                          ,@(when (listp description-and-args)
                              (rest description-and-args))))
   
-
-    
+   
 
 
 ;; organizing tests in files
-
-;; (defun %load-file (filespec)
-;;   (let* ((src (truename source-path))  ; resolve symlinks etc.
-;;          (src-modified-at (if (uiop:file-exists-p src)
-;;                               (uiop:file-write-date src)
-;;                               (error "SHIELD-FILE: file ~S not found" src)))
-;;          (fasl (uiop:compile-file-pathname src))
-;;          (fasl-modified-at (when (and fasl
-;;                                       (uiop:file-exists-p (truename fasl)))
-;;                              (uiop:file-write-date (truename fasl)))))
-
-;;     ;; recompile if there's no compiled file or if the source file has changed
-;;     (let ((latest-fasl fasl))
-;;       (when (or (null fasl)
-;;                 (null fasl-modified-at)
-;;                 (>= src-modified-at
-;;                     fasl-modified-at))
-;;         (format-shieldwall-line "Compiling ~S~%" src)
-;;         (setf latest-fasl
-;;               (if fasl
-;;                   (compile-file src :output-file fasl)
-;;                   (compile-file src))))
-;;       (load compiled-path)
-;;       compiled-path)))
-
-;; (defun shield-file (filespec &key skip describe directory)
-;;   (with-shield-group ((or describe
-;;                           (format nil "File: ~S" filespec))
-;;                       :skip skip
-;;                       :directory directory)
-;;     (%load-file (shieldwall-resolve-pathname filespec))
-;;     *last-shield-group*))
-
-;; (defun shield-file (filespec &key skip describe (directory *shieldwall-directory*))
-;;   (unless skip
-;;     (with-shieldwall-directory directory
-;;       (let* ((src (shieldwall-resolve-pathname filespec))  ; resolve symlinks etc
-;;              (src-modified-at (if (uiop:file-exists-p src)
-;;                                   (uiop:safe-file-write-date src)
-;;                                   (error "SHIELD-FILE: file ~S not found" filespec)))
-;;              (fasl (uiop:compile-file-pathname* src))
-;;              (fasl-modified-at (when (and fasl
-;;                                           (uiop:file-exists-p (uiop:truename* fasl)))
-;;                                  (uiop:safe-file-write-date (uiop:truename* fasl))))
-;;              (latest-fasl fasl))
-
-;;         ;; recompile if there's no compiled file or if the source file has changed
-;;         (when (or (null fasl)
-;;                   (null fasl-modified-at)
-;;                   (>= src-modified-at
-;;                       fasl-modified-at))
-;;           (format-shieldwall-line "~&;;~%;; ~Compiling file: ~S~%;;~%" src)
-;;           (setf latest-fasl
-;;                 (if fasl
-;;                     (uiop:compile-file* src :output-file fasl)
-;;                     (uiop:compile-file* src))))
-;;         (with-shield-group ((or describe
-;;                                 (format nil "file: ~S" filespec)))
-;;           (load latest-fasl))
-;;         *last-shield-group*))))
-
 
 (defun shield-file (filespec &key describe (directory *shieldwall-directory*) setup skip)
   (with-shield-group ((or describe
@@ -865,4 +709,3 @@
           (load fasl
                 :print nil
                 :verbose nil))))))
-
