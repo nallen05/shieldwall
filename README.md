@@ -45,7 +45,7 @@ ASDF, there are no additional dependencies after you install it with ASDF.
               'cl:error
               (+ 1 "2"))
       (shield-file "test.lisp" 
-d                   :describe "run tests in a file, treating them the same as a group"))))
+                   :describe "run tests in a file, treating them the same as a group"))))
 ```
 
 ### Making test report more/less verbose
