@@ -81,7 +81,7 @@
                        (+ 1 "2"))))
 
 
-;; muffling failures
+;; less verbose failures
 (shieldwall:with-shield-config (:verbose-fail-p nil)
   (shieldwall:shield "A failing singleton test"
                      3
@@ -101,11 +101,90 @@
                              (list 1 2 (list 3))))))))
 
 (shieldwall:with-shield-config (:suppress-errors-p t
-                                :verbose-fail-p t)
+                                :verbose-fail-p nil)
   (shieldwall:with-shield-group "This test has an error!"
     (shieldwall:shield "Test with an error"
                        3
                        (+ 1 "2"))))
+
+
+;; more verbose non-failures
+(shieldwall:with-shield-config (:verbose-nonfail-p t)
+  (shieldwall:shield "A passing singleton test"
+                     6
+                     (+ 1 2 3)))
+
+(shieldwall:with-shield-config (:verbose-fail-p t
+                                :verbose-nonfail-p t
+                                :suppress-errors-p t)
+  (shieldwall:with-shield-group "Test group"
+    (shieldwall:with-shield-group "Subgroup 1"
+      (shieldwall:shield "Simple passing test"
+                         3
+                         (+ 1 2))
+      (shieldwall:shield "Another simple passing test"
+                         6
+                         (+ 1 2 3))
+      (shieldwall:shield "Simple failing test"
+                         3
+                         (+ 1 2 3)))
+    (shieldwall:with-shield-group ("Subgroup 2" :skip t)
+      (shieldwall:shield "This test never runs"
+                         6
+                         (+ 1 2 3)))
+    (shieldwall:with-shield-group "Subgroup 3"
+      (shieldwall:shield ("This test also never runs" :skip t)
+                         6
+                         (+ 1 2 3))
+      (shieldwall:shield "Failure with error"
+                         3
+                         (+ 1 "2"))
+      (shieldwall:shield ("More complex fail" :test #'equalp)
+                         '(1 2 (3 5))
+                         (list 1 2 (list 3)))
+      (shieldwall:shield ("More complex pass" :test #'equalp)
+                         '(1 2 (3))
+                         (list 1 2 (list 3))))))
+
+
+;; more verbose non-failures + less verbose failures
+
+(shieldwall:with-shield-config (:verbose-fail-p nil
+                                :verbose-nonfail-p t
+                                :suppress-errors-p t)
+  (shieldwall:with-shield-group "Test group"
+    (shieldwall:with-shield-group "Subgroup 1"
+      (shieldwall:shield "Simple passing test"
+                         3
+                         (+ 1 2))
+      (shieldwall:shield "Another simple passing test"
+                         6
+                         (+ 1 2 3))
+      (shieldwall:shield "Simple failing test"
+                         3
+                         (+ 1 2 3)))
+    (shieldwall:with-shield-group ("Subgroup 2" :skip t)
+      (shieldwall:shield "This test never runs"
+                         6
+                         (+ 1 2 3)))
+    (shieldwall:with-shield-group "Subgroup 3"
+      (shieldwall:shield ("This test also never runs" :skip t)
+                         6
+                         (+ 1 2 3))
+      (shieldwall:shield "Failure with error"
+                         3
+                         (+ 1 "2"))
+      (shieldwall:shield ("More complex fail" :test #'equalp)
+                         '(1 2 (3 5))
+                         (list 1 2 (list 3)))
+      (shieldwall:shield ("More complex pass" :test #'equalp)
+                         '(1 2 (3))
+                         (list 1 2 (list 3))))))
+
+
+
+
+
 
 
 ;; stop on first fail

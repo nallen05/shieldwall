@@ -19,10 +19,10 @@
            :*shieldwall-stop-on-first-fail-p*
            :*shieldwall-suppress-errors-p*
            :*shieldwall-verbose-fail-p*
+           :*shieldwall-verbose-nonfail-p*
    
            ;; utility
            :format-shieldwall
-           :format-shieldwall-line
            
            ;; debugging test results
            :*last-failed-shield*
@@ -63,6 +63,7 @@
 (defparameter *shieldwall-stop-on-first-fail-p* nil)
 (defparameter *shieldwall-suppress-errors-p*    t)
 (defparameter *shieldwall-verbose-fail-p*       t)
+(defparameter *shieldwall-verbose-nonfail-p*    nil)
 
 ;; internal only
 (defvar *%in-test-run*        nil)
@@ -201,6 +202,15 @@
            fmt-string
            fmt-args)))
 
+(defun format-shieldwall-nested (fmt-string &rest fmt-args)
+  (format-shieldwall "~&~A~A"
+                     (make-string (length *%shield-group-stack*)
+                                  :initial-element #\Space)
+                     (apply #'format
+                            nil
+                            fmt-string
+                            fmt-args)))
+
 (defun %print-newline ()
   (format-shieldwall "~%"))
 
@@ -262,7 +272,8 @@
                                         (output *shieldwall-output*)
                                         (stop-on-first-fail-p *shieldwall-stop-on-first-fail-p*)
                                         (suppress-errors-p *shieldwall-suppress-errors-p*)
-                                        (verbose-fail-p *shieldwall-verbose-fail-p*))
+                                        (verbose-fail-p *shieldwall-verbose-fail-p*)
+                                        (verbose-nonfail-p *shieldwall-verbose-nonfail-p*))
   (with-shieldwall-directory directory
     (with-shieldwall-output
         (if (listp output)
@@ -274,20 +285,22 @@
             (*shieldwall-line-width* line-width)
             (*shieldwall-stop-on-first-fail-p* stop-on-first-fail-p)
             (*shieldwall-suppress-errors-p* suppress-errors-p)
-            (*shieldwall-verbose-fail-p* verbose-fail-p))
+            (*shieldwall-verbose-fail-p* verbose-fail-p)
+            (*shieldwall-verbose-nonfail-p* verbose-nonfail-p))
         (declare (special *shieldwall-filter-path*
                           *shieldwall-line-width*
                           *shieldwall-suppress-errors-p*
                           *shieldwall-stop-on-first-fail-p*
-                          *shieldwall-verbose-fail-p*))
+                          *shieldwall-verbose-fail-p*
+                          *shieldwall-verbose-nonfail-p*))
         (funcall thunk)))))
 
 (defmacro with-shield-config ((&rest args
-                               &key directory filter output verbose-fail-p
-                                    stop-on-first-fail-p suppress-errors-p )
+                               &key directory filter output stop-on-first-fail-p
+                                    suppress-errors-p verbose-fail-p verbose-nonfail-p)
                               &body body)
-  (declare (ignore directory filter output stop-on-first-fail-p verbose-fail-p
-                   suppress-errors-p ))
+  (declare (ignore directory filter output stop-on-first-fail-p suppress-errors-p
+                   verbose-fail-p verbose-nonfail-p))
   `(call-with-shield-config (lambda ()
                               "WITH-SHIELD-CONFIG body"
                               ,@body)
@@ -298,17 +311,39 @@
 
 (defun %print-shield-result (shield)
   (cond
+
+    ;; skipped test
     ((shield-skip-p shield)
-     (%register-line-dot!)
-     (format-shieldwall "s"))
+     (if *shieldwall-verbose-nonfail-p*
+         (format-shieldwall-nested "~&SKIP: ~A" (shield-describe shield))
+         (progn
+           (%register-line-dot!)
+           (format-shieldwall "s"))))
+
+    ;; passed test
     ((shield-passed-p shield)
-     (%register-line-dot!)
-     (format-shieldwall "."))
+     (if *shieldwall-verbose-nonfail-p*
+         (format-shieldwall-nested "~&PASS: ~A" (shield-describe shield))
+         (progn
+           (%register-line-dot!)
+           (format-shieldwall "."))))
+
+    ;; failed test - non-verbose failure output
     ((not *shieldwall-verbose-fail-p*)
-     (%register-line-dot!)
-     (format-shieldwall (if (shield-encountered-error-p shield)
-                            "e"
-                            "f")))
+     (if *shieldwall-verbose-nonfail-p*
+         (format-shieldwall-nested "~&FAIL~A(!): ~A"
+                                   (if (and (shield-encountered-error-p shield)
+                                            (not (shield-expect-error-p shield)))
+                                       " WITH ERROR"
+                                       "")
+                                   (shield-describe shield))
+         (progn
+           (%register-line-dot!)
+           (format-shieldwall (if (shield-encountered-error-p shield)
+                                  "e"
+                                  "f")))))
+
+    ;; failed test - verbose failure output
     (t
      (%reset-line-dots!)
      (%print-hline-small :left-corner-char #\,)
@@ -568,9 +603,14 @@
   (%reset-line-dots!))
 
 (defun %print-shield-group-result (shield-group)
-  (when (shield-group-skip-p shield-group)
-    (%register-line-dot!)
-    (format-shieldwall "S")))
+  (if *shieldwall-verbose-nonfail-p*
+      (if (shield-group-skip-p shield-group)
+          (format-shieldwall-nested "SKIPPING WHOLE GROUP: ~A"
+                                    (shield-group-describe shield-group))
+          (format-shieldwall-nested "~A" (shield-group-describe shield-group)))
+      (when (shield-group-skip-p shield-group)
+        (%register-line-dot!)
+        (format-shieldwall "S"))))
 
 (defun %percolate-up-shield-group-stats (shield-group)
   (when *%shield-group-stack*               
@@ -681,8 +721,8 @@
         (error "SHIELD-FILE: refusing to load circular reference! ~S" src))
 
       ;; continue
-;;      (when *shieldwall-verbose-output-p*
-;;        (format-shieldwall "~%entering file: ~S" (uiop:native-namestring src)))
+      (when *shieldwall-verbose-nonfail-p*
+        (format-shieldwall-nested "~%FILE: ~S" (uiop:native-namestring src)))
       (let* ((src-modified-at (uiop:safe-file-write-date src))
              (fasl (uiop:compile-file-pathname* src))
              (fasl-modified-at (when fasl
