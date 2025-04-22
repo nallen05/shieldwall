@@ -33,18 +33,18 @@ ASDF, there are no additional dependencies after you install it with ASDF.
 
 ```lisp
 (defun run-example-tests ()
-  (shieldwall:with-shield-group "Example group 1"
-    (shieldwall:with-shield-group "Example subgroup 1.2"
-      (shieldwall:shield "Simple test"
+  (with-shield-group "Example group 1"
+    (with-shield-group "Example subgroup 1.2"
+      (shield "Simple test"
                          3 
                          (+ 1 2))
-      (shieldwall:shield ("Change the test function" :test #'equalp)
+      (shield ("Change the test function" :test #'equalp)
                          '(1 2 (3))
                          (list 1 2 (list 3)))
-      (shieldwall:shield ("Verify certain actions trigger an error" :expect-error-p t)
+      (shield ("Verify certain actions trigger an error" :expect-error-p t)
                          'cl:error
                          (+ 1 "2"))
-      (shieldwall:shield-file "test.lisp" 
+      (shield-file "test.lisp" 
                               :describe "run tests in a file, treating them the same as a group"))))
 ```
 
@@ -59,7 +59,7 @@ If you'd like to see less info about failures & more info about the structure of
 suite, you can do it like this:
 
 ```lisp
-(shieldwall:with-shield-config (:verbose-fail-p nil
+(with-shield-config (:verbose-fail-p nil
                                 :verbose-nonfail-p t)
   (run-example-tests))
 ```
@@ -69,7 +69,7 @@ suite, you can do it like this:
 
 ```lisp
 ;; run the "Foo bar" test group, found within the "test.lisp" file
-(shieldwall:with-shield-config (:filter '("1" "1.2" "in a file" "foo"
+(with-shield-config (:filter '("1" "1.2" "in a file" "foo"
   (run-example-tests))
 ```
 
@@ -78,11 +78,11 @@ suite, you can do it like this:
 
 
 ```lisp
-(shieldwall:with-shield-group ("This group of tests is skipped" :skip t)
+(with-shield-group ("This group of tests is skipped" :skip t)
   ;; never evaluated
 )
 
-(shieldwall:shield ("This test is skipped" :skip t)
+(shield ("This test is skipped" :skip t)
                    never-evaluated
                    never-evaluated)
 ```
@@ -109,9 +109,9 @@ the test/group.
     (declare (special *cowbell*))
     (funcall thunk)))
   
-(shieldwall:with-shield-group ("Test cowbell" :setup 'call-with-cowbell)
-  (shieldwall:with-shield-group ("Test even more cowbell" :setup 'call-with-cowbell)
-    (shieldwall:shield ("So much cowbel!" :setup 'call-with-cowbell)
+(with-shield-group ("Test cowbell" :setup 'call-with-cowbell)
+  (with-shield-group ("Test even more cowbell" :setup 'call-with-cowbell)
+    (shield ("So much cowbel!" :setup 'call-with-cowbell)
                        3
                        *cowbell*)))
 ```
@@ -232,8 +232,8 @@ A path-based pattern used to filter tests/groups, similar to an XPATH query.
 
 Eg:
 ```
-(shieldwall:with-shield-config (:filter '("file-1" "1.2" "1.2.3" "feature-x"))
-  (shieldwall:shield-file "test-file1.lisp")
+(with-shield-config (:filter '("file-1" "1.2" "1.2.3" "feature-x"))
+  (shield-file "test-file1.lisp")
   )
 ```
   
@@ -315,9 +315,9 @@ that system
 
 
 ```lisp
-(shieldwall:with-shield-group ("My system tests" :directory :my-system)
-  (shieldwall:shield-file "test/test1.lisp")
-  (shieldwall:shield-file "test/test2.lisp")]
+(with-shield-group ("My system tests" :directory :my-system)
+  (shield-file "test/test1.lisp")
+  (shield-file "test/test2.lisp")]
 ```
 
 ## Redirect test report output to a file
@@ -328,21 +328,21 @@ the test report output to a file:
 
 
 ```lisp
-(shieldwall:with-shield-config (:output "~/test-run.txt" :suppress-errors-p t)
-  (shieldwall:shield-file "test.lisp"))
+(with-shield-config (:output "~/test-run.txt" :suppress-errors-p t)
+  (shield-file "test.lisp"))
 ```
 
 ### Inspecting test failures in the REPL
 
 ```lisp
-> (shieldwall:with-shield-config (:stop-on-first-fail-p t)
-    (shieldwall:shield-file "test2.lisp"))
+> (with-shield-config (:stop-on-first-fail-p t)
+    (shield-file "test2.lisp"))
 #<shieldewall-test-run ...>
 
-> (shieldwall:shieldwall-test-form shieldwall:*last-failed-shield*)
+> (shieldwall-test-form *last-failed-shield*)
 (+ 1 2 3)
 
-> (shieldwall:shieldwall-test-got shieldwall:*last-failed-shield*)
+> (shieldwall-test-got *last-failed-shield*)
 6
 ```
 
