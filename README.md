@@ -32,29 +32,45 @@ ASDF, there are no additional dependencies after you install it with ASDF.
 ### Writing tests & organizing them into groups
 
 ```lisp
-(shieldwall:with-shield-group "Example group 1"
-  (shieldwall:with-shield-group "Example subgroup 1.2"
-    (shieldwall:shield "Simple test"
-                       3 
-                       (+ 1 2))
-    (shieldwall:shield ("Change the test function" :test #'equalp)
-                       '(1 2 (3))
-                       (list 1 2 (list 3)))
-    (shieldwall:shield ("Verify certain actions trigger an error" :expect-error-p t)
-                       'cl:error
-                       (+ 1 "2"))
-    (shieldwall:shield-file "test.lisp" 
-                            :describe "run tests in a file, treating them the same as a group")))
+(defun run-example-tests ()
+  (shieldwall:with-shield-group "Example group 1"
+    (shieldwall:with-shield-group "Example subgroup 1.2"
+      (shieldwall:shield "Simple test"
+                         3 
+                         (+ 1 2))
+      (shieldwall:shield ("Change the test function" :test #'equalp)
+                         '(1 2 (3))
+                         (list 1 2 (list 3)))
+      (shieldwall:shield ("Verify certain actions trigger an error" :expect-error-p t)
+                         'cl:error
+                         (+ 1 "2"))
+      (shieldwall:shield-file "test.lisp" 
+                              :describe "run tests in a file, treating them the same as a group"))))
+```
+
+### Making test report more/less verbose
+
+Whenever you run your tests, the topmost group automatically creates & prints a test report, 
+creating roll-up summary stats of all the tests & test groups within its BODY. By default, a lot
+of extra information is printed about each individual test failure, but very little extra info is
+printed about the rest ("." for passing tests, "s" for skipped tests, & "S" for skipped groups"). 
+
+If you'd like to see less info about failures & more info about the structure of the overall test
+suite, you can do it like this:
+
+```lisp
+(shieldwall:with-shield-config (:verbose-fail-p nil
+                                :verbose-nonfail-p t)
+  (run-example-tests))
 ```
 
 
 ### Running only a specific subset of tests (using XPATH-like path filter)
 
 ```lisp
-;; run test 2.1.3, found 3 levels deep inside of file "test-b.lisp"
-(shieldwall:with-shield-config (:filter '("b" "2" "1" "3"))
-  (shieldwall:shield-file "test-a.lisp")
-  (shieldwall:shield-file "test-b.lisp"))
+;; run the "Foo bar" test group, found within the "test.lisp" file
+(shieldwall:with-shield-config (:filter '("1" "1.2" "in a file" "foo"
+  (run-example-tests))
 ```
 
 
