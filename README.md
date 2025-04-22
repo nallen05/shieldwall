@@ -179,7 +179,7 @@ loads the lisp file FILESPEC, compiling if necessary.
 - for safety, SHIELD-FILE will error if asked to load a file outside of DIRECTORY(!)
 
 
-### WITH-SHIELD-CONFIG ((&key directory filter line-width output stop-on-first-fail-p suppress-errors-p verbose-fail-p) &body body)
+### WITH-SHIELD-CONFIG ((&key directory filter line-width output stop-on-first-fail-p suppress-errors-p verbose-fail-p verbose-nonfail-p) &body body)
 
 a macro used to configure the behavior of test run
 - WITH-SHIELD-CONFIG has the ability to set several special variables. If you wanted to, you
@@ -256,6 +256,11 @@ error condition)
 #### `*SHIELDWALL-VERBOSE-FAIL-P*`
 
 Defaults to T. If set to NIL, will no longer print detailed information about each failing test
+
+#### `*SHIELDWALL-VERBOSE-NONFAIL-P*`
+
+Defaults to NIL. If set to T, will start printing more detailed information about each passing
+&/or skipped test/group
 
 
 ### FORMAT-SHIELDWALL (control-string &rest format-arguments)

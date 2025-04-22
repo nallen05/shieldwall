@@ -40,13 +40,14 @@ Tests are defined with SHIELD and grouped with WITH-SHIELD-GROUP to form a hiera
   :describe, :skip, :directory: Applied to the implicit group created
   Example: (SHIELD-FILE "my-tests.lisp")
 
-# 6. WITH-SHIELD-CONFIG ((&key filter directory output stop-on-first-fail-p suppress-errors-p verbose-fail-p) &body body)
+# 6. WITH-SHIELD-CONFIG ((&key filter directory output stop-on-first-fail-p suppress-errors-p verbose-fail-p verbose-nonfail-p) &body body)
   :filter: List of strings for selecting tests by their hierarchical path (substring matching). Use "" or T as wildcard levels
   :directory: Base directory for resolving paths. Can be a pathname or an ASDF system keyword
   :output: Destination for test reports (T for stdout, a pathname for a file, list to provide pathname with keyword args to pass to OPEN, NIL to suppress)
   :stop-on-first-fail-p: Stop tests after the first failure if true
   :suppress-errors-p: Treat errors during tests as failures (no Lisp error)
-  :verbose-fail-p: don't print detailed info about each failing tests if NIL
+  :verbose-fail-p: don't print detailed info about each failing tests/groups if NIL
+  :verbose-nonfail-p: print more detailed info about passing & skipped tests if T
   Example (filtering): (WITH-SHIELD-CONFIG (:filter '("math" "addition")) ...)
   
 # Key Special Variables
@@ -57,6 +58,7 @@ Special variables set by WITH-SHIELD-CONFIG:
   *SHIELDWALL-STOP-ON-FIRST-FAIL-P*: Stop at first failure
   *SHIELDWALL-SUPPRESS-ERRORS-P*: Treat errors as test failures
   *SHIELDWALL-VERBOSE-FAIL-P*: Print detailed info about each failing tests
+  *SHIELDWALL-VERBOSE-NONFAIL-P*: Print detailed info about passing & skipped tests/groups
 Other:
   *LAST-FAILED-SHIELD*: Holds the last failed test object (for inspection)
 
