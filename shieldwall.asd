@@ -7,8 +7,8 @@
 (defsystem :shieldwall
   :depends-on (:asdf :uiop)
   :description "
-
-SHIELDWALL: A minimalistic Common Lisp test framework, purpose-built for organizing large test suites into nested hierarchies spanning across multiple files & ASDF systems
+SHIELDWALL: Common Lisp unit test framework. A simple & lightweight way to organize & run large hierarchical
+test suites across multiple files &/or ASDF systems
 
 Choose SHIELDWALL when you want...
 1. To organize a large hierarchical test suite with deep nesting, spanning across multiple files & ASDF packages

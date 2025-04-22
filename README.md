@@ -48,7 +48,42 @@ ASDF, there are no additional dependencies after you install it with ASDF.
 ```
 
 
+### Running only a specific subset of tests (using XPATH-like path filter)
+
+```lisp
+;; run test 2.1.3, found 3 levels deep inside of file "test-b.lisp"
+(shieldwall:with-shield-config (:filter '("b" "2" "1" "3"))
+  (shieldwall:shield-file "test-a.lisp")
+  (shieldwall:shield-file "test-b.lisp"))
+```
+
+
+### Setting specific tests & test groups to always be skipped
+
+
+```lisp
+(shieldwall:with-shield-group ("This group of tests is skipped" :skip t)
+  ;; never evaluated
+)
+
+(shieldwall:shield ("This test is skipped" :skip t)
+                   never-evaluated
+                   never-evaluated)
+```
+
+Note: SKIP is evaluated, so you can use a dynamic predicate
+
+
 ### Test setup / teardown / fixtures / mocks / etc
+
+You can add a :SETUP form to any test or test group. It should be a function that takes a single
+argument: a "thunk" (function with zero arguments) passed to it by SHIELDWALL. Calling it runs
+the test/group.
+- to implement test setup, do it before calling the thunk
+- to implement test teardown, do it after calling the thunk
+- you can also LET special variables before calling the thunk, to further configure the 
+  environment
+
 
 ```lisp
 (defvar *cowbell* 0)
@@ -65,39 +100,6 @@ ASDF, there are no additional dependencies after you install it with ASDF.
                        *cowbell*)))
 ```
 
-You can add a :SETUP form to any test or test group. It should be a function that takes a single
-argument. That argument is a "thunk" (a function with zero arguments) which will be passed to it
-by SHIELDWALL. Calling it runs the test/group.
-- to implement a setup action, do it before calling the thunk
-- to implement a teardown action, do it after calling the thunk
-- you can also LET special variables then call it, to further control the environment
-
-
-### Running specific subsets of tests (using XPATH-like path filter)
-
-```lisp
-;; run test 2.1.3, found 3 levels deep inside of file "test-b.lisp"
-(shieldwall:with-shield-config (:filter '("b" "2" "1" "3"))
-  (shieldwall:shield-file "test-a.lisp")
-  (shieldwall:shield-file "test-b.lisp"))
-```
-
-
-### Skipping unfinishesd or probleatic tests
-
-
-```lisp
-(shieldwall:with-shield-group ("This group of tests is skipped" :skip t)
-  ;; never evaluated
-)
-
-(shieldwall:shield ("This test is skipped" :skip t)
-                   never-evaluated
-                   never-evaluated)
-```
-
-Note: SKIP is evaluated, so it can be a dynamic predicate
-
 
 
 ## API
@@ -105,8 +107,8 @@ Note: SKIP is evaluated, so it can be a dynamic predicate
 ### SHIELD (describe expect try)
 ### SHIELD ((describe &key expect-error-p setup skip test) expect try)
 
-runs a unit test, comparing the test form TRY vs the expected value EXPECT
-- by default, it compares values with EQL, & signalled error conditions with SUBTYPEP
+Runs a unit test, comparing the test form TRY vs the expected value EXPECT
+- by default: values are compared ith EQL. Signalled error conditions compared with SUBTYPEP.
 - DESCRIBE is a string printed in the test report if the test fails. It's also used by
   WITH-SHIELD-CONFIG's pattern-matching :FILTER feature
 
@@ -280,19 +282,11 @@ Useful to look up the filter path to a shield object, for use with WITH-SHIELD-C
 
 ## Advanced usage
 
-### Inspecting test failures in the REPL
+## Using an LLM to generate SHIELDWALL unit tests
 
-```lisp
-> (shieldwall:with-shield-config (:stop-on-first-fail-p t)
-    (shieldwall:shield-file "test2.lisp"))
-#<shieldewall-test-run ...>
-
-> (shieldwall:shieldwall-test-form shieldwall:*last-failed-shield*)
-(+ 1 2 3)
-
-> (shieldwall:shieldwall-test-got shieldwall:*last-failed-shield*)
-6
-```
+The [SHORT-README.txt](SHORT-README.txt) is good for LLMS (& human programmers who don't like
+long documentation) to learn how to write unit tests with SHIELDWALL. Add it to the context 
+ahead of your prompt.
 
 
 ### ASDF integration
@@ -319,7 +313,20 @@ the test report output to a file:
   (shieldwall:shield-file "test.lisp"))
 ```
 
+### Inspecting test failures in the REPL
+
+```lisp
+> (shieldwall:with-shield-config (:stop-on-first-fail-p t)
+    (shieldwall:shield-file "test2.lisp"))
+#<shieldewall-test-run ...>
+
+> (shieldwall:shieldwall-test-form shieldwall:*last-failed-shield*)
+(+ 1 2 3)
+
+> (shieldwall:shieldwall-test-got shieldwall:*last-failed-shield*)
+6
+```
 
 ## License
 
-MIT license by Nick Allen <nallen05@gmail.com>
+[MIT license](LICENSE) by Nick Allen <nallen05@gmail.com>

@@ -48,7 +48,6 @@ Tests are defined with SHIELD and grouped with WITH-SHIELD-GROUP to form a hiera
   :suppress-errors-p: Treat errors during tests as failures (no Lisp error)
   Example (filtering): (WITH-SHIELD-CONFIG (:filter '("math" "addition")) ...)
   
-
 # Key Special Variables
 Special variables set by WITH-SHIELD-CONFIG:
   *SHIELDWALL-DIRECTORY*: Base path for files (pathname or )
@@ -59,10 +58,9 @@ Special variables set by WITH-SHIELD-CONFIG:
 Other:
   *LAST-FAILED-SHIELD*: Holds the last failed test object (for inspection)
 
-
 # Common mistakes
- - EXPECT is the first parameter to SHIELD! there is no EXPECT function/macro/keyword!!
- - in order for a SHIELD's EXPECT & TRY arguments to have access to the same environment you need to either: (A) put the SHIELD inside of a LET form or (B) use a :SETUP form!!
- - to add keyword parameters to, bundle them with the description like this ("my test" :test #'equalp). There should never ever be any keywords after EXPECT/TRY!!
+ - EXPECT is the first parameter to SHIELD. TRY is the second. There are no EXPECT or TRY functions/macros or keywords.
+ - There should NEVER be any keywords after EXPECT & TRY. To add keyword parameters to a test, bundle them with the description (before EXPECT/TRY) like this: "my test" -> ("my test" :test #'equalp). 
+ - in order for a SHIELD's EXPECT & TRY arguments to have access to the same environment you need to either: (A) put the whole SHIELD inside of a LET form or (B) use a :SETUP form
 
 Use this information to understand SHIELDWALL and generate unit tests using its API.
