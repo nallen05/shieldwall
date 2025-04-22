@@ -15,10 +15,10 @@
            :*shieldwall-directory*
            :*shieldwall-filter-path*
            :*shieldwall-line-width*
-           :*shieldwall-muffle-failures-p*
            :*shieldwall-output*
            :*shieldwall-stop-on-first-fail-p*
            :*shieldwall-suppress-errors-p*
+           :*shieldwall-verbose-fail-p*
    
            ;; utility
            :format-shieldwall
@@ -59,10 +59,10 @@
 (defparameter *shieldwall-directory*            nil)
 (defparameter *shieldwall-filter-path*          nil)
 (defparameter *shieldwall-line-width*           35)
-(defparameter *shieldwall-muffle-failures-p*    nil)
 (defparameter *shieldwall-output*               t)
 (defparameter *shieldwall-stop-on-first-fail-p* nil)
 (defparameter *shieldwall-suppress-errors-p*    t)
+(defparameter *shieldwall-verbose-fail-p*       t)
 
 ;; internal only
 (defvar *%in-test-run*        nil)
@@ -259,10 +259,10 @@
                                         (directory *shieldwall-directory*)
                                         (filter *shieldwall-filter-path*)
                                         (line-width *shieldwall-line-width*)
-                                        (muffle-failures-p *shieldwall-muffle-failures-p*)
                                         (output *shieldwall-output*)
                                         (stop-on-first-fail-p *shieldwall-stop-on-first-fail-p*)
-                                        (suppress-errors-p *shieldwall-suppress-errors-p*))
+                                        (suppress-errors-p *shieldwall-suppress-errors-p*)
+                                        (verbose-fail-p *shieldwall-verbose-fail-p*))
   (with-shieldwall-directory directory
     (with-shieldwall-output
         (if (listp output)
@@ -272,21 +272,21 @@
           (rest output))
       (let ((*shieldwall-filter-path* filter)
             (*shieldwall-line-width* line-width)
-            (*shieldwall-muffle-failures-p* muffle-failures-p)
             (*shieldwall-stop-on-first-fail-p* stop-on-first-fail-p)
-            (*shieldwall-suppress-errors-p* suppress-errors-p))
+            (*shieldwall-suppress-errors-p* suppress-errors-p)
+            (*shieldwall-verbose-fail-p* verbose-fail-p))
         (declare (special *shieldwall-filter-path*
                           *shieldwall-line-width*
-                          *shieldwall-muffle-failures-p*
                           *shieldwall-suppress-errors-p*
-                          *shieldwall-stop-on-first-fail-p*))
+                          *shieldwall-stop-on-first-fail-p*
+                          *shieldwall-verbose-fail-p*))
         (funcall thunk)))))
 
 (defmacro with-shield-config ((&rest args
-                               &key directory filter muffle-failures-p output
+                               &key directory filter output verbose-fail-p
                                     stop-on-first-fail-p suppress-errors-p )
                               &body body)
-  (declare (ignore directory filter muffle-failures-p output stop-on-first-fail-p
+  (declare (ignore directory filter output stop-on-first-fail-p verbose-fail-p
                    suppress-errors-p ))
   `(call-with-shield-config (lambda ()
                               "WITH-SHIELD-CONFIG body"
@@ -304,7 +304,7 @@
     ((shield-passed-p shield)
      (%register-line-dot!)
      (format-shieldwall "."))
-    (*shieldwall-muffle-failures-p*
+    ((not *shieldwall-verbose-fail-p*)
      (%register-line-dot!)
      (format-shieldwall (if (shield-encountered-error-p shield)
                             "e"

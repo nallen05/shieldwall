@@ -82,12 +82,12 @@
 
 
 ;; muffling failures
-(shieldwall:with-shield-config (:muffle-failures-p t)
+(shieldwall:with-shield-config (:verbose-fail-p nil)
   (shieldwall:shield "A failing singleton test"
                      3
                      (+ 1 2 3)))
 
-(shieldwall:with-shield-config (:muffle-failures-p t)
+(shieldwall:with-shield-config (:verbose-fail-p nil)
   (shieldwall:with-shield-group "These tests should fail. Oh no!"
     (shieldwall:with-shield-group "1.1"
       (shieldwall:with-shield-group "1.1.2"
@@ -101,7 +101,7 @@
                              (list 1 2 (list 3))))))))
 
 (shieldwall:with-shield-config (:suppress-errors-p t
-                                :muffle-failures-p t)
+                                :verbose-fail-p t)
   (shieldwall:with-shield-group "This test has an error!"
     (shieldwall:shield "Test with an error"
                        3

@@ -179,7 +179,7 @@ loads the lisp file FILESPEC, compiling if necessary.
 - for safety, SHIELD-FILE will error if asked to load a file outside of DIRECTORY(!)
 
 
-### WITH-SHIELD-CONFIG ((&key directory filter line-width muffle-failures-p output stop-on-first-fail-p suppress-errors-p) &body body)
+### WITH-SHIELD-CONFIG ((&key directory filter line-width output stop-on-first-fail-p suppress-errors-p verbose-fail-p) &body body)
 
 a macro used to configure the behavior of test run
 - WITH-SHIELD-CONFIG has the ability to set several special variables. If you wanted to, you
@@ -227,12 +227,6 @@ Eg:
 this is the assumed width of the terminal screen, & can be used to configure the width of 
 horizontal divider lines & the line of test characters printed in the terminal
 
-
-#### `*SHIELDWALL-MUFFLE-FAILURES-P*`
-
-if set to T, then detailed descriptions are not printed in the case of test failures
-
-
 #### `*SHIELDWALL-OUTPUT*`
 
 This is the output stream that the test report is written to. It can be any of these types:
@@ -258,6 +252,10 @@ if set to T, then the test run will immedietly stop the first time it encounters
 
 if set to T, then errors inside of tests are treated as test failtures (within signaling a lisp
 error condition)
+
+#### `*SHIELDWALL-VERBOSE-FAIL-P*`
+
+Defaults to T. If set to NIL, will no longer print detailed information about each failing test
 
 
 ### FORMAT-SHIELDWALL (control-string &rest format-arguments)
