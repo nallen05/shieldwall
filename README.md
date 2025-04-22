@@ -36,16 +36,16 @@ ASDF, there are no additional dependencies after you install it with ASDF.
   (with-shield-group "Example group 1"
     (with-shield-group "Example subgroup 1.2"
       (shield "Simple test"
-                         3 
-                         (+ 1 2))
+               3 
+              (+ 1 2))
       (shield ("Change the test function" :test #'equalp)
-                         '(1 2 (3))
-                         (list 1 2 (list 3)))
+              '(1 2 (3))
+              (list 1 2 (list 3)))
       (shield ("Verify certain actions trigger an error" :expect-error-p t)
-                         'cl:error
-                         (+ 1 "2"))
+              'cl:error
+              (+ 1 "2"))
       (shield-file "test.lisp" 
-                              :describe "run tests in a file, treating them the same as a group"))))
+d                   :describe "run tests in a file, treating them the same as a group"))))
 ```
 
 ### Making test report more/less verbose
@@ -60,7 +60,7 @@ suite, you can do it like this:
 
 ```lisp
 (with-shield-config (:verbose-fail-p nil
-                                :verbose-nonfail-p t)
+                     :verbose-nonfail-p t)
   (run-example-tests))
 ```
 
@@ -83,8 +83,8 @@ suite, you can do it like this:
 )
 
 (shield ("This test is skipped" :skip t)
-                   never-evaluated
-                   never-evaluated)
+        never-evaluated
+        never-evaluated)
 ```
 
 Note: SKIP is evaluated, so you can use a dynamic predicate
@@ -112,8 +112,8 @@ the test/group.
 (with-shield-group ("Test cowbell" :setup 'call-with-cowbell)
   (with-shield-group ("Test even more cowbell" :setup 'call-with-cowbell)
     (shield ("So much cowbel!" :setup 'call-with-cowbell)
-                       3
-                       *cowbell*)))
+            3
+            *cowbell*)))
 ```
 
 
