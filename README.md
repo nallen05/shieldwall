@@ -68,8 +68,9 @@ suite, you can do it like this:
 ### Running only a specific subset of tests (using XPATH-like path filter)
 
 ```lisp
-;; run the "Foo bar" test group, found within the "test.lisp" file
-(with-shield-config (:filter '("1" "1.2" "in a file" "foo"
+;; run the "Feature x" test group, found within the "test.lisp" file
+;; the filter is a list of substring matches applied to the tree (like XPATH)
+(with-shield-config (:filter '("1" "1.2" "file" "x"))
   (run-example-tests))
 ```
 
@@ -78,13 +79,14 @@ suite, you can do it like this:
 
 
 ```lisp
+(shield ("This test is skipped" :skip t)
+        never-evaluated
+        never-evaluated)
+        
 (with-shield-group ("This group of tests is skipped" :skip t)
   ;; never evaluated
 )
 
-(shield ("This test is skipped" :skip t)
-        never-evaluated
-        never-evaluated)
 ```
 
 Note: SKIP is evaluated, so you can use a dynamic predicate
@@ -233,8 +235,7 @@ A path-based pattern used to filter tests/groups, similar to an XPATH query.
 Eg:
 ```
 (with-shield-config (:filter '("file-1" "1.2" "1.2.3" "feature-x"))
-  (shield-file "test-file1.lisp")
-  )
+  (shield-file "test-file1.lisp"))
 ```
   
 
