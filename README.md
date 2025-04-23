@@ -321,6 +321,10 @@ that system
   (shield-file "test/test2.lisp")]
 ```
 
+
+This [ASDF best practices guide](https://gitlab.common-lisp.net/asdf/asdf/blob/master/doc/best_practices.md#testing_system) might be useful to you.
+
+
 ## Redirect test report output to a file
 
 if you are running a very large test suites test with lot of failures, it's possible that the
