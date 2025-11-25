@@ -18,6 +18,7 @@
            :*shieldwall-output*
            :*shieldwall-stop-on-first-fail-p*
            :*shieldwall-suppress-errors-p*
+           :*shieldwall-test*
            :*shieldwall-verbose-fail-p*
            :*shieldwall-verbose-nonfail-p*
    
@@ -62,6 +63,7 @@
 (defparameter *shieldwall-output*               t)
 (defparameter *shieldwall-stop-on-first-fail-p* nil)
 (defparameter *shieldwall-suppress-errors-p*    t)
+(defparameter *shieldwall-test*                 'cl:equal)
 (defparameter *shieldwall-verbose-fail-p*       t)
 (defparameter *shieldwall-verbose-nonfail-p*    nil)
 
@@ -404,7 +406,7 @@
                                  :test-function (or test
                                                     (if expect-error-p
                                                         'cl:subtypep
-                                                        'cl:eql)))))
+                                                        *shieldwall-test* )))))
     
     ;; if not inside of a test group, it will just print a singleton dot
     (unless *%shield-group-stack*

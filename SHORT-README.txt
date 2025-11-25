@@ -16,7 +16,7 @@ Tests are defined with SHIELD and grouped with WITH-SHIELD-GROUP to form a hiera
 
 # 2. SHIELD ((describe &key test expect-error-p setup skip) expect try)
   describe: Description of the test
-  :test: Custom comparison function (default: EQL)
+  :test: Custom comparison function (default: EQUAL)
   :expect-error-p: Expect an error of type expect if true
   :setup: A function taking a thunk (function to run the test) for setup/teardown
   :skip: If true, the test is skipped
@@ -57,13 +57,14 @@ Special variables set by WITH-SHIELD-CONFIG:
   *SHIELDWALL-OUTPUT*: Output destination (T, NIL, or stream)
   *SHIELDWALL-STOP-ON-FIRST-FAIL-P*: Stop at first failure
   *SHIELDWALL-SUPPRESS-ERRORS-P*: Treat errors as test failures
+  *SHIELDWALL-TEST*: default comparison test (defaults to CL:EQUAL)
   *SHIELDWALL-VERBOSE-FAIL-P*: Print detailed info about each failing tests
   *SHIELDWALL-VERBOSE-NONFAIL-P*: Print detailed info about passing & skipped tests/groups
 Other:
   *LAST-FAILED-SHIELD*: Holds the last failed test object (for inspection)
 
 # Common mistakes
- - EXPECT is the first parameter to SHIELD. TRY is the second. There are no EXPECT or TRY functions/macros or keywords.
+ - EXPECT is the first parameter to SHIELD. TRY is the second. There are no EXPECT/TRY functions/macros. There are no :EXPECT/:TRE keywords.
  - There should NEVER be any keywords after EXPECT & TRY. To add keyword parameters to a test, bundle them with the description (before EXPECT/TRY) like this: "my test" -> ("my test" :test #'equalp). 
  - in order for a SHIELD's EXPECT & TRY arguments to have access to the same environment you need to either: (A) put the whole SHIELD inside of a LET form or (B) use a :SETUP form
 

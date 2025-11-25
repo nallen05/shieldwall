@@ -126,9 +126,12 @@ the test/group.
 ### SHIELD ((describe &key expect-error-p setup skip test) expect try)
 
 Runs a unit test, comparing the test form TRY vs the expected value EXPECT
-- by default: values are compared ith EQL. Signalled error conditions compared with SUBTYPEP.
-- DESCRIBE is a string printed in the test report if the test fails. It's also used by
-  WITH-SHIELD-CONFIG's pattern-matching :FILTER feature
+- DESCRIBE is a string describing the test
+  - it is printed in the test report if the test fails
+  - it's also sometimes used by pattern matching, such as WITH-SHIELD-CONFIG :FILTER, to find test cases
+- if TEST is not provided, then SHIELD defaults to the following behavior:
+  1. values are compared with `*SHIELDWALL-TEST*` (which defaults to CL:EQUAL)
+  2. if EXPECT-ERROR-P is non-null, errors are compared with SUBTYPEP
 
 In the primary syntax, DESCRIBE should be a string literal
 
@@ -350,6 +353,15 @@ the test report output to a file:
 > (shieldwall-test-got *last-failed-shield*)
 6
 ```
+
+## Changelog
+
+## 0.1.1
+- `*shieldwall-test*` defaults to CL:EQUAL (not CL:EQL)
+
+## v0.1.0
+- initial commit
+
 
 ## License
 
