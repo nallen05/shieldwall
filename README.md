@@ -38,9 +38,9 @@ ASDF, there are no additional dependencies after you install it with ASDF.
       (shield "Simple test"
                3 
               (+ 1 2))
-      (shield ("Change the test function" :test #'equalp)
-              '(1 2 (3))
-              (list 1 2 (list 3)))
+      (shield ("Change the test function" :test #'string=)
+              "foo Bar"
+              (format nil "~Aoo ~Aar" #\f #\B)
       (shield ("Verify certain actions trigger an error" :expect-error-p t)
               'cl:error
               (+ 1 "2"))
@@ -130,7 +130,8 @@ Runs a unit test, comparing the test form TRY vs the expected value EXPECT
   - it is printed in the test report if the test fails
   - it's also sometimes used by pattern matching, such as WITH-SHIELD-CONFIG :FILTER, to find test cases
 - if TEST is not provided, then SHIELD defaults to the following behavior:
-  1. values are compared with `*SHIELDWALL-TEST*` (which defaults to CL:EQUAL)
+  1. values are compared with `*SHIELDWALL-TEST*` (which defaults to CL:EQUALP)
+      - common gotcha: remember that EQUALP compares strings case insensitively
   2. if EXPECT-ERROR-P is non-null, errors are compared with SUBTYPEP
 
 In the primary syntax, DESCRIBE should be a string literal
@@ -145,9 +146,9 @@ But in the secondary advanced syntax, it can be a list, allowing for keyword arg
 passed:
 
 ```lisp
-(shield ("a simple test" :test #'equalp)
-        '(1 2 (3))
-        (list 1 2 (list 3)))
+(shield ("a case sensitive test" :test #'string=)
+        "foo Bar"
+        (format nil "~Aoo ~Aar" #\f #\B))
 ```
 
 In this advanced syntax:
@@ -355,6 +356,9 @@ the test report output to a file:
 ```
 
 ## Changelog
+
+## 0.1.2
+- `*shieldwall-test*` defaults to CL:EQUALP (not CL:EQUAL)
 
 ## 0.1.1
 - `*shieldwall-test*` defaults to CL:EQUAL (not CL:EQL)

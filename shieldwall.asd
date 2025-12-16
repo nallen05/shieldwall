@@ -16,6 +16,6 @@ Choose SHIELDWALL when you want...
 4. Fine-grained filtering (via XPATH-like path queries) to run specific subsets of a large corpus of tests
 "
   :author "Nick Allen <nallen05@gmail.com>"
-  :version "0.1.1"
+  :version "0.1.2"
   :serial t
   :components ((:file shieldwall)))

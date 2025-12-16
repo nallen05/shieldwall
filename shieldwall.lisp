@@ -63,7 +63,7 @@
 (defparameter *shieldwall-output*               t)
 (defparameter *shieldwall-stop-on-first-fail-p* nil)
 (defparameter *shieldwall-suppress-errors-p*    t)
-(defparameter *shieldwall-test*                 'cl:equal)
+(defparameter *shieldwall-test*                 'cl:equalp)
 (defparameter *shieldwall-verbose-fail-p*       t)
 (defparameter *shieldwall-verbose-nonfail-p*    nil)
 
